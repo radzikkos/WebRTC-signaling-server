@@ -6,11 +6,12 @@ const server = http.createServer((req, res) => {
   res.end("I am connected");
 });
 const wss = new websocket.Server({ server });
-const { v4: uuidv4 } = require("uuid");
-
+// const { v4: uuidv4 } = require("uuid");
+let peersNo = 0;
 wss.on("connection", (ws, req) => {
   console.log("Peer connected");
-  ws.id = uuidv4();
+  peersNo++;
+  ws.id = peersNo;
   ws.send(JSON.stringify({ type: "myId", id: ws.id }));
   //receive the message from client on Event: 'message'
   ws.on("message", (msg) => {
