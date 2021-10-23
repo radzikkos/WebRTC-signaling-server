@@ -31,11 +31,7 @@ wss.on("connection", (ws, req) => {
           ) {
             console.log("Sending answer");
             client.send(JSON.stringify(object));
-          } else if (
-            msg &&
-            object.type === "new-ice-candidate" &&
-            client.id == object.toId
-          ) {
+          } else if (msg && object.type === "new-ice-candidate") {
             console.log("Sending sending new candidate from ", object.peerType);
             client.send(JSON.stringify(object));
           } else if (msg && object.type === "initiating") {
