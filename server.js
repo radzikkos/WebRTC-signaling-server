@@ -6,9 +6,12 @@ const server = http.createServer((req, res) => {
   res.end("I am connected");
 });
 const wss = new websocket.Server({ server });
+const { v4: uuidv4 } = require("uuid");
 
 wss.on("connection", (ws, req) => {
   console.log("Peer connected");
+  ws.id = uuidv4();
+  ws.send(JSON.stringify({ type: "myId", id: ws.id }));
   //receive the message from client on Event: 'message'
   ws.on("message", (msg) => {
     // console.log("sending message");
@@ -17,13 +20,21 @@ wss.on("connection", (ws, req) => {
         try {
           const object = JSON.parse(msg);
           // console.log(object.peerType);
-          if (msg && object.type === "offer") {
+          if (msg && object.type === "offer" && client.id == object.toId) {
             console.log("Sending offer");
             client.send(JSON.stringify(object));
-          } else if (msg && object.type === "answer") {
+          } else if (
+            msg &&
+            object.type === "answer" &&
+            client.id == object.toId
+          ) {
             console.log("Sending answer");
             client.send(JSON.stringify(object));
-          } else if (msg && object.type === "new-ice-candidate") {
+          } else if (
+            msg &&
+            object.type === "new-ice-candidate" &&
+            client.id == object.toId
+          ) {
             console.log("Sending sending new candidate from ", object.peerType);
             client.send(JSON.stringify(object));
           } else if (msg && object.type === "initiating") {
