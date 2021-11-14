@@ -5,11 +5,13 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "NODE_ENV=production node server.js",
+    "devStart" : "nodemon authServer.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.24.0",
     "dotenv": "^10.0.0",
     "nodemon": "^2.0.13",
     "ws": "^8.2.2"
