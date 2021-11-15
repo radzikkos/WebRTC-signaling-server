@@ -19,7 +19,7 @@ server.on("upgrade", async function upgrade(req, socket, head) {
   try {
     wss.handleUpgrade(req, socket, head, async function (ws) {
       const result = await axios.get(authServer + `/user${token}`);
-      console.log(result.data);
+      // console.log(result.data);
       // console.log(result.data);
       if (!result.data.authenticated) {
         socket.destroy();
@@ -95,39 +95,47 @@ wss.on("connection", (ws, req) => {
     //   // broadcastConnectedPeers(wss);
     //   ws.send(JSON.stringify({ type: "myId", id: parsedMsg.user.id }));
     // }
-
-    wss.clients.forEach((client) => {
-      if (client !== ws && client.readyState === websocket.OPEN) {
-        try {
-          const object = JSON.parse(msg);
-          // console.log(object.peerType);
-          if (msg && object.type === "offer" && client.id == object.toId) {
-            console.log("Sending offer");
-            client.send(JSON.stringify(object));
-          } else if (
-            msg &&
-            object.type === "answer" &&
-            client.id == object.toId
-          ) {
-            console.log("Sending answer");
-            client.send(JSON.stringify(object));
-          } else if (msg && object.type === "new-ice-candidate") {
-            console.log("Sending sending new candidate from ", object.peerType);
-            client.send(JSON.stringify(object));
-          } else if (msg && object.type === "initiating") {
-            if (object.toId) {
-              console.log("SEND TO ONE CLIENT");
-              if (client.id == object.toId) client.send(JSON.stringify(object));
-            } else {
-              console.log("Initiate message");
+    const parsedMsg = JSON.parse(msg);
+    if (parsedMsg.type === "ping") {
+      console.log("Ping");
+    } else {
+      wss.clients.forEach((client) => {
+        if (client !== ws && client.readyState === websocket.OPEN) {
+          try {
+            const object = JSON.parse(msg);
+            // console.log(object.peerType);
+            if (msg && object.type === "offer" && client.id == object.toId) {
+              console.log("Sending offer");
               client.send(JSON.stringify(object));
+            } else if (
+              msg &&
+              object.type === "answer" &&
+              client.id == object.toId
+            ) {
+              console.log("Sending answer");
+              client.send(JSON.stringify(object));
+            } else if (msg && object.type === "new-ice-candidate") {
+              console.log(
+                "Sending sending new candidate from ",
+                object.peerType
+              );
+              client.send(JSON.stringify(object));
+            } else if (msg && object.type === "initiating") {
+              if (object.toId) {
+                console.log("SEND TO ONE CLIENT");
+                if (client.id == object.toId)
+                  client.send(JSON.stringify(object));
+              } else {
+                console.log("Initiate message");
+                client.send(JSON.stringify(object));
+              }
             }
+          } catch (err) {
+            console.log(err);
           }
-        } catch (err) {
-          console.log(err);
         }
-      }
-    });
+      });
+    }
   });
   ws.on("close", () => {
     deleteFromConnectedPeers(connectedPeers, ws);
@@ -140,6 +148,6 @@ wss.on("connection", (ws, req) => {
   });
 });
 
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 5000;
 server.listen(port);
 console.log(`Listening on port ${port}`);
